@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <img src="{% static 'img/Orozaliev_1.jpg' %}" alt="Здесь размещено фото Орозалиева" width="650">
+  <div class="info-text">
+      <h2>Меня зовут Нурбек Орозалиев</h2>
+      <p>Я - ученик Яндекс.Практикум. Курс "Python-разработчик плюс". Когорта 20+.</p>
+      <hr>
+  </div>
+  <h6>Список социальных сетей</h6>
+  <a href="https://vk.com/id1247049" target="_blank">Vkontakte</a>
+  <h6>Мой профиль на github</h6>
+  <a href="https://github.com/Nurbek878" target="_blank">Github</a>
+  <h4>Мое хобби</h4>
+  <ol>
+      <li>Путешествия</li>
+      <li>Программирование</li>
+      <li>Прогулки на свежем воздухе</li>
+      <li>Игра на пианино</li>
+  </ol>
+</div>
+{% endblock %} 
