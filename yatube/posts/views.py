@@ -10,7 +10,7 @@ from .utils import paginator_work
 
 @cache_page(20)
 def index(request):
-    post_list = Post.objects.all()
+    post_list = Post.objects.select_related('group').all()
     context = {
         'page_obj': paginator_work(request, post_list),
     }
@@ -111,18 +111,14 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = User.objects.get(username=username)
-    following = Follow.objects.filter(
-        user=request.user,
-        author=author,
-    ).exists()
-    if not following and author != request.user:
-        Follow.objects.create(author=author,
-                              user=request.user)
+    if author != request.user:
+        Follow.objects.get_or_create(author=author,
+                                     user=request.user)
     return redirect('posts:profile', username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    Follow.objects.get(user=request.user, author=author).delete()
+    Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile', username=username)

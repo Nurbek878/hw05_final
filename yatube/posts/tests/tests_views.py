@@ -8,7 +8,8 @@ from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from posts.models import Follow, Group, Post
+
+from ..models import Follow, Group, Post
 
 User = get_user_model()
 
@@ -176,8 +177,8 @@ class PostPagesTest(TestCase):
                 else:
                     self.assertIn(expected, form_field)
 
-    def test_authorized_user_can_follow_and_unfollow(self):
-        """Авторизованный пользователь может подписаться и отписаться."""
+    def test_authorized_user_can_follow(self):
+        """Авторизованный пользователь может подписаться."""
         author = User.objects.get(username=self.user)
         follow_count = Follow.objects.count()
         self.authorized_client.get(
@@ -189,11 +190,22 @@ class PostPagesTest(TestCase):
             author=author,
             user=self.user_follower
         ).exists())
+
+    def test_authorized_user_can_unfollow(self):
+        """Авторизованный пользователь может отписаться."""
+        author = User.objects.get(username=self.user)
+        Follow.objects.create(
+            author=author,
+            user=self.user_follower
+        )
         self.authorized_client.get(
             reverse(
                 'posts:profile_unfollow', kwargs={'username': author})
         )
-        self.assertEqual(Follow.objects.count(), follow_count)
+        self.assertFalse(Follow.objects.filter(
+            author=author,
+            user=self.user_follower
+        ).exists())
 
     def test_unauthorized_user_cannot_follow(self):
         """Неавторизованный пользователь не может подписаться."""
@@ -218,7 +230,7 @@ class PostPagesTest(TestCase):
     def test_cache_if_post_delete(self):
         """При удалении поста содержимое не меняется.
         При очистке кэша содержимое изменяется."""
-        post = Post.objects.get(pk=1)
+        post = Post.objects.get(pk=self.post.pk)
         response = self.authorized_client.get(reverse('posts:index'))
         post.delete()
         response_before = self.authorized_client.get(reverse('posts:index'))
