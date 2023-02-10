@@ -8,7 +8,7 @@ from .models import Comment, Follow, Group, Post
 from .utils import paginator_work
 
 
-@cache_page(60 * 20)
+@cache_page(20)
 def index(request):
     post_list = Post.objects.all()
     context = {

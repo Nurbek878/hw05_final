@@ -149,7 +149,7 @@ class PostPagesTest(TestCase):
 
     def test_new_post_correct_group(self):
         """Пост появился на index, group_list, profile,
-        и  отсутствует в другой группе"""
+        и  отсутствует в другой группе."""
         Group.objects.create(
             title='Тестовая группа другая',
             slug='test-another',
@@ -177,6 +177,7 @@ class PostPagesTest(TestCase):
                     self.assertIn(expected, form_field)
 
     def test_authorized_user_can_follow_and_unfollow(self):
+        """Авторизованный пользователь может подписаться и отписаться."""
         author = User.objects.get(username=self.user)
         follow_count = Follow.objects.count()
         self.authorized_client.get(
@@ -195,6 +196,7 @@ class PostPagesTest(TestCase):
         self.assertEqual(Follow.objects.count(), follow_count)
 
     def test_unauthorized_user_cannot_follow(self):
+        """Неавторизованный пользователь не может подписаться."""
         author = User.objects.get(username=self.user)
         follow_count = Follow.objects.count()
         self.client.get(
@@ -204,6 +206,7 @@ class PostPagesTest(TestCase):
         self.assertEqual(Follow.objects.count(), follow_count)
 
     def test_authorized_user_cannot_follow_himself(self):
+        """Автор не может подписаться на самого себя."""
         author = User.objects.get(username=self.user)
         follow_count = Follow.objects.count()
         self.authorized_client_author.get(
@@ -211,6 +214,18 @@ class PostPagesTest(TestCase):
                 'posts:profile_follow', kwargs={'username': author})
         )
         self.assertEqual(Follow.objects.count(), follow_count)
+
+    def test_cache_if_post_delete(self):
+        """При удалении поста содержимое не меняется.
+        При очистке кэша содержимое изменяется."""
+        post = Post.objects.get(pk=1)
+        response = self.authorized_client.get(reverse('posts:index'))
+        post.delete()
+        response_before = self.authorized_client.get(reverse('posts:index'))
+        self.assertEqual(response.content, response_before.content)
+        cache.clear()
+        response_after = self.authorized_client.get(reverse('posts:index'))
+        self.assertNotEqual(response.content, response_after.content)
 
 
 class PaginatorViewsTest(TestCase):
